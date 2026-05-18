@@ -10,12 +10,14 @@ const _nhsDobDay   = "15";
 const _nhsDobMonth = "04";
 const _nhsDobYear  = "1962";
 const _appointmentType = (_e.TD_APPOINTMENT_TYPE || "Video") as AppointmentType;
+
 export const NHS_USER = {
   firstName: "Lloyd",
   lastName: "Peeney",
   email: "lloyd.p2@yopmail.com",
   phone: "447467059973",
   gender: "male",
+  postcode: "HD59LT",
 }
 
 export const TEST_USER = {

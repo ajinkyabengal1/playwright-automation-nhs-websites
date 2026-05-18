@@ -621,6 +621,18 @@
       .td-input.invalid { border-color: var(--clr-fail); box-shadow: 0 0 0 3px rgba(245,88,90,0.12); }
       .td-select option { background: var(--clr-surface); }
 
+      /* NHS User toggle */
+      .nhs-toggle-wrap { display:flex; align-items:center; gap:5px; margin-left:auto; padding-right:2px; }
+      .nhs-toggle-wrap input[type=checkbox] { display:none; }
+      .nhs-slider { width:30px; height:16px; background:var(--clr-border-drk); border-radius:8px; position:relative; cursor:pointer; transition:background 0.2s; flex-shrink:0; }
+      .nhs-slider::after { content:""; position:absolute; top:2px; left:2px; width:12px; height:12px; border-radius:50%; background:#fff; transition:left 0.2s; }
+      #td-nhsUser:checked ~ .nhs-slider { background:#005eb8; }
+      #td-nhsUser:checked ~ .nhs-slider::after { left:16px; }
+      .nhs-toggle-text { font-size:10px; font-weight:700; color:#005eb8; letter-spacing:.05em; }
+      .nhs-badge { display:none; margin-left:4px; font-size:9px; font-weight:800; color:#fff; background:#005eb8; border-radius:3px; padding:1px 4px; letter-spacing:.05em; }
+      .nhs-mode .nhs-badge { display:inline; }
+      .nhs-mode .td-input[data-nhs], .nhs-mode .td-select[data-nhs] { border-color:#005eb8; background:rgba(0,94,184,0.07); }
+
       .td-check-row {
         grid-column: 1 / -1; display: flex; align-items: center; gap: 8px;
         font-size: 12px; color: var(--clr-txt);
@@ -868,25 +880,31 @@
           <div class="td-body">
 
             <!-- User Info -->
-            <div class="td-section collapsed">
-              <div class="td-section-header">👤 User Info</div>
+            <div class="td-section collapsed" id="td-userInfoSection">
+              <div class="td-section-header">👤 User Info
+                <label class="nhs-toggle-wrap" onclick="event.stopPropagation()">
+                  <span class="nhs-toggle-text">NHS</span>
+                  <input type="checkbox" id="td-nhsUser">
+                  <span class="nhs-slider"></span>
+                </label>
+              </div>
               <div class="td-section-body">
-                <div class="td-field"><label>First Name *</label><input id="td-firstName" class="td-input" type="text"></div>
-                <div class="td-field"><label>Last Name *</label><input id="td-lastName" class="td-input" type="text"></div>
-                <div class="td-field full"><label>Email *</label><input id="td-email" class="td-input" type="text"></div>
-                <div class="td-field"><label>Phone *</label><input id="td-phone" class="td-input" type="text"></div>
-                <div class="td-field"><label>Postcode *</label><input id="td-postcode" class="td-input" type="text"></div>
+                <div class="td-field"><label>First Name *<span class="nhs-badge">NHS</span></label><input id="td-firstName" class="td-input" type="text" data-nhs></div>
+                <div class="td-field"><label>Last Name *<span class="nhs-badge">NHS</span></label><input id="td-lastName" class="td-input" type="text" data-nhs></div>
+                <div class="td-field full"><label>Email *<span class="nhs-badge">NHS</span></label><input id="td-email" class="td-input" type="text" data-nhs></div>
+                <div class="td-field"><label>Phone *<span class="nhs-badge">NHS</span></label><input id="td-phone" class="td-input" type="text" data-nhs></div>
+                <div class="td-field"><label>Postcode *<span class="nhs-badge">NHS</span></label><input id="td-postcode" class="td-input" type="text" data-nhs></div>
                 <div class="td-field">
-                  <label>Gender</label>
-                  <select id="td-gender" class="td-select">
+                  <label>Gender<span class="nhs-badge">NHS</span></label>
+                  <select id="td-gender" class="td-select" data-nhs>
                     <option value="male">Male</option>
                     <option value="female">Female</option>
                   </select>
                 </div>
                 <div class="td-field"><label>Guardian Name</label><input id="td-guardianName" class="td-input" type="text"></div>
-                <div class="td-field"><label>DOB Day * (DD)</label><input id="td-dobDay" class="td-input" type="text" placeholder="01"></div>
-                <div class="td-field"><label>DOB Month * (MM)</label><input id="td-dobMonth" class="td-input" type="text" placeholder="01"></div>
-                <div class="td-field"><label>DOB Year * (YYYY)</label><input id="td-dobYear" class="td-input" type="text" placeholder="1990"></div>
+                <div class="td-field"><label>DOB Day * (DD)<span class="nhs-badge">NHS</span></label><input id="td-dobDay" class="td-input" type="text" placeholder="01" data-nhs></div>
+                <div class="td-field"><label>DOB Month * (MM)<span class="nhs-badge">NHS</span></label><input id="td-dobMonth" class="td-input" type="text" placeholder="01" data-nhs></div>
+                <div class="td-field"><label>DOB Year * (YYYY)<span class="nhs-badge">NHS</span></label><input id="td-dobYear" class="td-input" type="text" placeholder="1990" data-nhs></div>
                 <div class="td-field"><label>Password *</label><input id="td-password" class="td-input" type="text"></div>
                 <div class="td-field"><label>Confirm Password *</label><input id="td-confirmPassword" class="td-input" type="text"></div>
               </div>
@@ -1246,6 +1264,55 @@
     });
     document.querySelectorAll(".td-section-header").forEach(hdr => {
       hdr.addEventListener("click", () => hdr.closest(".td-section").classList.toggle("collapsed"));
+    });
+
+    // ── NHS User toggle ────────────────────────────────────────────────────────
+    const NHS_USER_DATA = {
+      firstName: "Lloyd", lastName: "Peeney",
+      email: "lloyd.p2@yopmail.com", phone: "447467059973",
+      gender: "male", dobDay: "15", dobMonth: "04", dobYear: "1962",
+      postcode: "HD59LT",
+    };
+    let _preNhsValues = null;
+    document.getElementById("td-nhsUser").addEventListener("change", function () {
+      const section = document.getElementById("td-userInfoSection");
+      if (this.checked) {
+        _preNhsValues = {
+          firstName: document.getElementById("td-firstName").value,
+          lastName:  document.getElementById("td-lastName").value,
+          email:     document.getElementById("td-email").value,
+          phone:     document.getElementById("td-phone").value,
+          gender:    document.getElementById("td-gender").value,
+          dobDay:    document.getElementById("td-dobDay").value,
+          dobMonth:  document.getElementById("td-dobMonth").value,
+          dobYear:   document.getElementById("td-dobYear").value,
+          postcode:  document.getElementById("td-postcode").value,
+        };
+        document.getElementById("td-firstName").value = NHS_USER_DATA.firstName;
+        document.getElementById("td-lastName").value  = NHS_USER_DATA.lastName;
+        document.getElementById("td-email").value     = NHS_USER_DATA.email;
+        document.getElementById("td-phone").value     = NHS_USER_DATA.phone;
+        document.getElementById("td-gender").value    = NHS_USER_DATA.gender;
+        document.getElementById("td-dobDay").value    = NHS_USER_DATA.dobDay;
+        document.getElementById("td-dobMonth").value  = NHS_USER_DATA.dobMonth;
+        document.getElementById("td-dobYear").value   = NHS_USER_DATA.dobYear;
+        document.getElementById("td-postcode").value  = NHS_USER_DATA.postcode;
+        section.classList.add("nhs-mode");
+      } else {
+        if (_preNhsValues) {
+          document.getElementById("td-firstName").value = _preNhsValues.firstName;
+          document.getElementById("td-lastName").value  = _preNhsValues.lastName;
+          document.getElementById("td-email").value     = _preNhsValues.email;
+          document.getElementById("td-phone").value     = _preNhsValues.phone;
+          document.getElementById("td-gender").value    = _preNhsValues.gender;
+          document.getElementById("td-dobDay").value    = _preNhsValues.dobDay;
+          document.getElementById("td-dobMonth").value  = _preNhsValues.dobMonth;
+          document.getElementById("td-dobYear").value   = _preNhsValues.dobYear;
+          document.getElementById("td-postcode").value  = _preNhsValues.postcode;
+          _preNhsValues = null;
+        }
+        section.classList.remove("nhs-mode");
+      }
     });
 
     // ── Status helpers ─────────────────────────────────────────────────────────
